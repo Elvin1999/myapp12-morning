@@ -1,10 +1,8 @@
 import { loginuser } from "@/api/auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useAuth } from "./_layout";
+import { useState } from "react";
 
 import {
-  ActivityIndicator,
   Alert,
   Button,
   Text,
@@ -13,37 +11,17 @@ import {
 } from "react-native";
 
 export default function LoginScreen() {
+  const { login } = useAuth();
+
   const [username, setUsername] = useState("emilys");
   const [password, setPassword] = useState("emilyspass");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const checkToken = async () => {
-      try {
-        const token = await AsyncStorage.getItem("token");
-
-        if (token) {
-          router.replace("/");
-          return;
-        }
-      } catch (error) {
-        console.log(error);
-      }
-
-      setLoading(false);
-    };
-
-    checkToken();
-  }, []);
 
   const handleLogin = async () => {
     try {
       const res = await loginuser(username, password);
 
       if (res.accessToken) {
-        await AsyncStorage.setItem("token", res.accessToken);
-
-        router.replace("/");
+        await login(res.accessToken);
       } else {
         Alert.alert("Error", "Invalid credentials!");
       }
@@ -51,10 +29,6 @@ export default function LoginScreen() {
       Alert.alert("Error", "There is a problem in login!");
     }
   };
-
-  if (loading) {
-    return <ActivityIndicator size="large" />;
-  }
 
   return (
     <View style={{ padding: 20 }}>
